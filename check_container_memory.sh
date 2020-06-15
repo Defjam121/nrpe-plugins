@@ -39,9 +39,6 @@
 #   Initialization 
 #----------------------------------------------------------------------------------------------------------
 
-VERSION="$(docker -v | awk '{print $3}')"
-CLEANED_VERSION="${VERSION//,}"
-
 CONTAINER=$1
 
 RUNNING=$(docker inspect --format="{{ .State.Running }}" $CONTAINER 2> /dev/null)
@@ -63,11 +60,7 @@ if [ "$2" = "-w" ] && [ "$3" -gt "0" ] && [ "$4" = "-c" ] && [ "$5" -gt "0" ]; t
 #   Check the container internal memory usage
 #----------------------------------------------------------------------------------------------------------
 
-  if [ $CLEANED_VERSION \> "1.10.*" ]; then
-    MEMORY="$(docker stats --no-stream $CONTAINER | grep -A1 CONTAINER | grep -v CONTAINER | awk '{print $8}')"
-  elif  [ $CLEANED_VERSION \< "1.9.*" ]; then
-    MEMORY="$(docker stats --no-stream $CONTAINER | grep -A1 CONTAINER | grep -v CONTAINER | awk '{print $6}')"
-  fi
+  MEMORY="$(docker stats --no-stream $CONTAINER | grep -A1 CONTAINER | grep -v CONTAINER | awk '{print $7}')"
   if [ $warn -lt ${MEMORY%%.*} ]; then
     if [ $crit -lt ${MEMORY%%.*} ]; then
       echo "CRITICAL - Memory Usage = $MEMORY | Memory Usage=$MEMORY;$warn;$crit;0;100"
