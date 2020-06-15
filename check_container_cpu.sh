@@ -41,8 +41,6 @@
 
 CONTAINER=$1
 
-CPUCORES=$(docker info | grep CPUs | awk '{print $2}')
-
 RUNNING=$(docker inspect --format="{{ .State.Running }}" $CONTAINER 2> /dev/null)
 
 #----------------------------------------------------------------------------------------------------------
@@ -62,10 +60,10 @@ if [ "$2" = "-w" ] && [ "$3" -gt "0" ] && [ "$4" = "-c" ] && [ "$5" -gt "0" ] ; 
 #   Check the container internal cpu usage
 #----------------------------------------------------------------------------------------------------------
 
-  CPUUSAGE="$(docker stats --no-stream $CONTAINER | grep -A1 CONTAINER | grep -v CONTAINER | awk '{print $2}')"
-
-  CPU=$(expr ${CPUUSAGE%%.*} / ${CPUCORES})
-
+  CPUUSAGE="$(docker stats --no-stream $CONTAINER | grep -A1 CONTAINER | grep -v CONTAINER | awk '{print $3}')"
+  # delete %
+  CPU=${CPUUSAGE%?}
+  
   if [ $warn -lt ${CPU%%.*} ];then
     if [ $crit -lt ${CPU%%.*} ]; then
       echo "CRITICAL - CPU Usage = $CPU% | CPU Usage=$CPU%;$warn;$crit;0;100"
